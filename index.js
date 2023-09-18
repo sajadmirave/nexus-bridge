@@ -1,6 +1,7 @@
 const fs = require("fs")
 require("dotenv/config") //read env file
 const path = require('path')
+
 // http only
 // encryption
 // root 13
@@ -20,17 +21,22 @@ class Session {
     }
 
     init() {
-        // options: write in file, securty, cookie, secret, write in memory
-
-        // create session folder
-        if (!fs.existsSync('storage'))
-            fs.mkdirSync('storage')
-
-        if (!fs.existsSync(this.path))
-            fs.mkdirSync('storage/session')
-
+        this.createFolder()
         const cookieParser = require("cookie-parser")
         this.app.use(cookieParser())
+    }
+
+    // create folder setup for saving session
+    createFolder() {
+        // options: write in file, securty, cookie, secret, write in memory
+        const directoryPath = path.join(__dirname, 'storage', 'session');
+
+        // create session folder
+        if (!fs.existsSync(directoryPath)) {
+            // Create the directory and any missing parent directories (recursively)
+            fs.mkdirSync(directoryPath, { recursive: true });
+            console.log('Directory "storage/session" created successfully.');
+        }
     }
 
     // generate session id
@@ -55,20 +61,21 @@ class Session {
         // check key, if key is exits then not created new session. just return
         if (request.cookies && request.cookies[key]) {
             // Key already exists, return without creating a new session
-            if (fs.existsSync(path.join(this.path, request.cookies[key]))) {
+            if (fs.existsSync(path.join(__dirname, this.path, request.cookies[key]))) {
                 // the session is exists and dont create new one...
                 return
             }
         }
 
         const sessionID = this.generateID();
-        const sessionFilePath = path.join(this.path, sessionID);
+        const sessionFilePath = path.join(__dirname, this.path, sessionID);
 
         // Ensure the directory exists
-        const dirPath = path.dirname(sessionFilePath);
-        if (!fs.existsSync(dirPath)) {
-            fs.mkdirSync(dirPath, { recursive: true }); // Create the directory and any missing parent directories
-        }
+        // const dirPath = path.dirname(sessionFilePath);
+        // if (!fs.existsSync(dirPath)) {
+        //     fs.mkdirSync(dirPath, { recursive: true }); // Create the directory and any missing parent directories
+        // }
+        this.createFolder()
 
         // save key and session id in cookie, and when user is get session then send key 
         // store key and session id in cookie
