@@ -11,6 +11,7 @@ class Session {
 
         this.session = new Map()
         this.path = 'storage/session'
+        this.secret = '123'
     }
 
     init() {
@@ -50,20 +51,45 @@ class Session {
         return sessionID
     }
 
-    get(sessionID) {
-        const session = fs.readFileSync(`${sessionID}`, 'utf-8')
+    checkSecret(secret) {
+        if (this.secret != secret) {
+            return 0
+        }
+
+        return 1
+    }
+
+    get(sessionID, secret) {
+        // check secret
+        let result = this.checkSecret(secret)
+        if (result != 1) return 'invalid secret'
+
+        this.path += `/${sessionID}`
+        if (!fs.existsSync(this.path)) {
+            return "Invalid Session Id"
+        }
+
+        const session = fs.readFileSync(this.path, 'utf-8')
         return session;
     }
 
     remove(sessionID) {
+        this.path += `/${sessionID}`
 
+        if (fs.existsSync(this.path)) {
+            fs.unlinkSync(this.path)
+            return "session cleared"
+        }
+
+        return "invalid session id"
     }
 }
 
 
 const mysession = new Session()
 mysession.init()
-mysession.create('hello world')
-console.log(mysession.get("drnglnu1"))
+// mysession.create('hello world')
+console.log(mysession.get("Kp2kdsadaPP5b", '123'))
+// console.log(mysession.remove("Kp2kPP5b"))
 
 
