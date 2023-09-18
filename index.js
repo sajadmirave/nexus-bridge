@@ -8,7 +8,20 @@ const fs = require("fs")
 
 class Session {
     constructor() {
+
         this.session = new Map()
+        this.path = 'storage/session'
+    }
+
+    init() {
+        // options: write in file, securty, cookie, secret, write in memory
+
+        // create session folder
+        if (!fs.existsSync('storage'))
+            fs.mkdirSync('storage')
+
+        if (!fs.existsSync(this.path))
+            fs.mkdirSync('storage/session')
     }
 
     // generate session id
@@ -27,10 +40,11 @@ class Session {
 
     create(content) {
         const sessionID = this.generateID()
+        this.path += `/${sessionID}`
 
         // set seestion
         this.session.set(sessionID, content)
-        fs.writeFileSync(`${sessionID}`, content, 'utf-8')
+        fs.writeFileSync(this.path, content, 'utf-8')
 
         //set session id in http only cookie
         return sessionID
@@ -41,13 +55,15 @@ class Session {
         return session;
     }
 
-    remove(sessionID){
+    remove(sessionID) {
 
     }
 }
 
+
 const mysession = new Session()
-// mysession.create('meow')
+mysession.init()
+mysession.create('hello world')
 console.log(mysession.get("drnglnu1"))
 
 
