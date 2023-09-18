@@ -1,5 +1,6 @@
 const fs = require("fs")
 require("dotenv/config") //read env file
+const { response } = require("express")
 // http only
 // encryption
 // root 13
@@ -9,6 +10,7 @@ require("dotenv/config") //read env file
 
 class Session {
     constructor() {
+        // this.app = app
         this.session = new Map()
         this.path = 'storage/session'
         this.secret = process.env.SESSION_SECRET
@@ -39,13 +41,21 @@ class Session {
         return result
     }
 
-    create(content) {
+    storeInCookie(res, key, sessionID) {
+        return res.cookie(key, sessionID)
+    }
+
+    create(key, value, response) {
         const sessionID = this.generateID()
         this.path += `/${sessionID}`
+        // save key and session id in cookie, and when user is get session then send key 
+        // store key and session id in cookie
+        // response.cookie('sessionid', sessionID)
+        this.storeInCookie(response, key, sessionID)
 
         // set seestion
-        this.session.set(sessionID, content)
-        fs.writeFileSync(this.path, JSON.stringify(content), 'utf-8')
+        this.session.set(sessionID, value)
+        fs.writeFileSync(this.path, JSON.stringify(value), 'utf-8')
 
         //set session id in http only cookie
         return sessionID
@@ -86,10 +96,4 @@ class Session {
 }
 
 
-const mysession = new Session()
-mysession.init()
-mysession.create({ user: "dsadsa" })
-// console.log(mysession.get("Kp2kdsadaPP5b", 'sj'))
-// console.log(mysession.remove("Kp2kPP5b"))
-
-
+module.exports = { Session }
