@@ -1,4 +1,5 @@
 const fs = require("fs")
+require("dotenv/config") //read env file
 // http only
 // encryption
 // root 13
@@ -8,10 +9,9 @@ const fs = require("fs")
 
 class Session {
     constructor() {
-
         this.session = new Map()
         this.path = 'storage/session'
-        this.secret = '123'
+        this.secret = process.env.SESSION_SECRET
     }
 
     init() {
@@ -45,7 +45,7 @@ class Session {
 
         // set seestion
         this.session.set(sessionID, content)
-        fs.writeFileSync(this.path, content, 'utf-8')
+        fs.writeFileSync(this.path, JSON.stringify(content), 'utf-8')
 
         //set session id in http only cookie
         return sessionID
@@ -88,8 +88,8 @@ class Session {
 
 const mysession = new Session()
 mysession.init()
-// mysession.create('hello world')
-console.log(mysession.get("Kp2kdsadaPP5b", '123'))
+mysession.create({ user: "dsadsa" })
+// console.log(mysession.get("Kp2kdsadaPP5b", 'sj'))
 // console.log(mysession.remove("Kp2kPP5b"))
 
 
