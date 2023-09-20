@@ -65,7 +65,9 @@ var NexusBridge = /** @class */ (function () {
     };
     NexusBridge.prototype.get = function (key, request) {
         var cookies = cookie.parse(request.headers.cookie || '');
-        return cookies[key];
+        var sessionId = cookies[key];
+        var data = fs.readFileSync(path.join(__dirname, this.path, sessionId), 'utf-8');
+        return data;
     };
     return NexusBridge;
 }());

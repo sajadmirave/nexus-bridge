@@ -76,7 +76,10 @@ class NexusBridge {
 
     public get(key: string, request: http.IncomingMessage) {
         const cookies = cookie.parse(request.headers.cookie || '');
-        return cookies[key];
+        const sessionId = cookies[key];
+
+        const data = fs.readFileSync(path.join(__dirname,this.path,sessionId),'utf-8')
+        return data;
     }
 }
 
