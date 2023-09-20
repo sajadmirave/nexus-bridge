@@ -1,5 +1,5 @@
 {
-  "name": "session-storage",
+  "name": "nexus-bridge",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
