@@ -1,14 +1,14 @@
 const express = require("express")
 const app = express()
 
-const { Session } = require('../index')
-const nexus = new Session(app)
+// var cookie = require('cookie');
+const { NexusBridge } = require('../nexus')
+const nexus = new NexusBridge()
 nexus.init()
 
 app.get("/", (req, res) => {
-    // session.create("language", "python", res)
-    nexus.create('lang', 'javascript', res, req)
-    // console.log(nexus.get("",'',req))
+    nexus.set('cat', 'meow', res)
+
     res.send("meow🐾")
 })
 

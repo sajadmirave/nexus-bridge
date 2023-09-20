@@ -10,8 +10,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cookie": "^0.5.0",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "fs": "*",
+    "js-cookie": "^3.0.5",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.5.2",
+    "@types/node": "^20.6.3"
   }
 }
