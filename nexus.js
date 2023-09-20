@@ -5,25 +5,44 @@ require("dotenv/config");
 var fs = require("fs");
 var path = require("path");
 var cookie = require("cookie");
-// const __dirname = path.dirname(new URL(import.meta.url).pathname);
 var NexusBridge = /** @class */ (function () {
-    function NexusBridge() {
+    function NexusBridge(options) {
+        if (options === void 0) { options = {}; }
+        /**
+         * session saved path
+         * @type {string}
+         */
         this.path = 'storage/session';
+        /**
+         * session secret
+         * @type {string}
+         */
         this.secret = process.env.NEXUS_BRIDGE_SECRET;
-        this.IdLength = 8;
+        // ---------------------------------
+        /**
+         * set header for create cookie
+         * @type {header}
+         */
         this.setCookieHeader = 'Set-Cookie'; //save sessionId in http only cookie
+        /**
+         * save session id in here
+         * @type {Map}
+         */
         this.session = new Map();
+        this.createStructure();
+        this.IdLength = options.sessionIdLength !== undefined ? options.sessionIdLength : 8;
     }
+    /**
+     * Create folder structure to save session
+     *
+     * @returns {File} - Create folder
+     */
     NexusBridge.prototype.createStructure = function () {
         var directoryPath = path.join(__dirname, this.path);
         if (!fs.existsSync(directoryPath)) {
             // Create the directory and any missing parent directories (recursively)
             fs.mkdirSync(directoryPath, { recursive: true });
         }
-    };
-    // session id length
-    NexusBridge.prototype.init = function () {
-        this.createStructure();
     };
     NexusBridge.prototype.generateSessionId = function () {
         var char = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxys1234567890";
@@ -34,6 +53,13 @@ var NexusBridge = /** @class */ (function () {
         }
         return result;
     };
+    /**
+     * check session is exists or not
+     *
+     * @param {string} key - The key to check for a session
+     * @returns {boolean} - True if a session exists, false otherwaise
+     * @throws {Error} - Throws an error when the session check fails and `err` is true.
+     */
     NexusBridge.prototype.checkExistsSession = function (key) {
         var existsSession = this.session.get(key);
         if (existsSession !== undefined && fs.existsSync(path.join(__dirname, this.path, existsSession))) {
@@ -42,10 +68,12 @@ var NexusBridge = /** @class */ (function () {
         return false;
     };
     /**
-     * @param key
-     * @param value
-     * @param response
-     * @returns
+     * get session data
+     *
+     * @param {string} key
+     * @param {any} value
+     * @param {Response} response
+     * @returns {Headers} - Save sessionId in http only cookie
      */
     NexusBridge.prototype.set = function (key, value, response) {
         if (this.checkExistsSession(key))
@@ -63,6 +91,12 @@ var NexusBridge = /** @class */ (function () {
         this.session.set(key, sessionId);
         return response.setHeader(this.setCookieHeader, cookies);
     };
+    /**
+     *
+     * @param {string} key
+     * @param {Request} request
+     * @returns {data} - Return session data
+     */
     NexusBridge.prototype.get = function (key, request) {
         var cookies = cookie.parse(request.headers.cookie || '');
         var sessionId = cookies[key];

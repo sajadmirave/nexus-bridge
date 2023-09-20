@@ -4,14 +4,60 @@ import * as path from "path";
 import * as cookie from "cookie"
 import * as http from "http"
 
-// const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
+interface InitOptions {
+    /**
+     * set length for session id
+     * 
+     * @type {number}
+     */
+    sessionIdLength?: number;
+}
+
 class NexusBridge {
+    /**
+     * session saved path
+     * @type {string}
+     */
     private path = 'storage/session'
+
+    /**
+     * session secret
+     * @type {string}
+     */
     private secret = process.env.NEXUS_BRIDGE_SECRET
-    private IdLength = 8
+
+    /**
+     * sessionId length
+     * @type {number}
+     */
+    private IdLength: number;
+
+    // ---------------------------------
+    /**
+     * set header for create cookie 
+     * @type {header}
+     */
     private setCookieHeader: string = 'Set-Cookie' //save sessionId in http only cookie
+
+    /**
+     * save session id in here
+     * @type {Map}
+     */
     private session = new Map()
 
+    constructor(options: InitOptions = {}) {
+        this.createStructure()
+
+        // options
+        this.IdLength = options.sessionIdLength !== undefined ? options.sessionIdLength : 8
+    }
+
+    /**
+     * Create folder structure to save session
+     * 
+     * @returns {File} - Create folder
+     */
     private createStructure() {
         const directoryPath = path.join(__dirname, this.path)
 
@@ -19,11 +65,6 @@ class NexusBridge {
             // Create the directory and any missing parent directories (recursively)
             fs.mkdirSync(directoryPath, { recursive: true });
         }
-    }
-
-    // session id length
-    public init() {
-        this.createStructure()
     }
 
     private generateSessionId() {
@@ -38,6 +79,13 @@ class NexusBridge {
         return result
     }
 
+    /**
+     * check session is exists or not
+     * 
+     * @param {string} key - The key to check for a session 
+     * @returns {boolean} - True if a session exists, false otherwaise
+     * @throws {Error} - Throws an error when the session check fails and `err` is true. 
+     */
     private checkExistsSession(key: string): boolean {
         let existsSession = this.session.get(key)
         if (existsSession !== undefined && fs.existsSync(path.join(__dirname, this.path, existsSession))) {
@@ -48,10 +96,12 @@ class NexusBridge {
     }
 
     /**
-     * @param key
-     * @param value
-     * @param response 
-     * @returns 
+     * get session data
+     * 
+     * @param {string} key
+     * @param {any} value
+     * @param {Response} response 
+     * @returns {Headers} - Save sessionId in http only cookie
      */
     public set(key: string, value: string, response: http.ServerResponse) {
         if (this.checkExistsSession(key)) return;
@@ -74,11 +124,17 @@ class NexusBridge {
         return response.setHeader(this.setCookieHeader, cookies)
     }
 
+    /**
+     * 
+     * @param {string} key 
+     * @param {Request} request 
+     * @returns {data} - Return session data
+     */
     public get(key: string, request: http.IncomingMessage) {
         const cookies = cookie.parse(request.headers.cookie || '');
         const sessionId = cookies[key];
 
-        const data = fs.readFileSync(path.join(__dirname,this.path,sessionId),'utf-8')
+        const data = fs.readFileSync(path.join(__dirname, this.path, sessionId), 'utf-8')
         return data;
     }
 }

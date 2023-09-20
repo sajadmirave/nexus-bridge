@@ -3,8 +3,9 @@ const app = express()
 
 // var cookie = require('cookie');
 const { NexusBridge } = require('../nexus')
-const nexus = new NexusBridge()
-nexus.init()
+const nexus = new NexusBridge({
+    sessionIdLength: 30
+})
 
 app.get("/", (req, res) => {
     nexus.set('cat', 'meow', res)
