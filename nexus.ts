@@ -10,6 +10,7 @@ class NexusBridge {
     private secret = process.env.NEXUS_BRIDGE_SECRET
     private IdLength = 8
     private setCookieHeader: string = 'Set-Cookie' //save sessionId in http only cookie
+    private session = new Map()
 
     private createStructure() {
         const directoryPath = path.join(__dirname, this.path)
@@ -37,6 +38,15 @@ class NexusBridge {
         return result
     }
 
+    private checkExistsSession(key: string): boolean {
+        let existsSession = this.session.get(key)
+        if (existsSession !== undefined && fs.existsSync(path.join(__dirname, this.path, existsSession))) {
+            return true
+        }
+
+        return false
+    }
+
     /**
      * @param key
      * @param value
@@ -44,6 +54,8 @@ class NexusBridge {
      * @returns 
      */
     public set(key: string, value: string, response: http.ServerResponse) {
+        if (this.checkExistsSession(key)) return;
+
         const sessionId = this.generateSessionId()
         const sessionFilePath = path.join(__dirname, this.path, sessionId)
 
@@ -58,6 +70,7 @@ class NexusBridge {
             path: '/', // The path for which the cookie is valid (root path)
         });
 
+        this.session.set(key, sessionId)
         return response.setHeader(this.setCookieHeader, cookies)
     }
 

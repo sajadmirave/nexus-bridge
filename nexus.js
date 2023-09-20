@@ -12,6 +12,7 @@ var NexusBridge = /** @class */ (function () {
         this.secret = process.env.NEXUS_BRIDGE_SECRET;
         this.IdLength = 8;
         this.setCookieHeader = 'Set-Cookie'; //save sessionId in http only cookie
+        this.session = new Map();
     }
     NexusBridge.prototype.createStructure = function () {
         var directoryPath = path.join(__dirname, this.path);
@@ -33,6 +34,13 @@ var NexusBridge = /** @class */ (function () {
         }
         return result;
     };
+    NexusBridge.prototype.checkExistsSession = function (key) {
+        var existsSession = this.session.get(key);
+        if (existsSession !== undefined && fs.existsSync(path.join(__dirname, this.path, existsSession))) {
+            return true;
+        }
+        return false;
+    };
     /**
      * @param key
      * @param value
@@ -40,6 +48,8 @@ var NexusBridge = /** @class */ (function () {
      * @returns
      */
     NexusBridge.prototype.set = function (key, value, response) {
+        if (this.checkExistsSession(key))
+            return;
         var sessionId = this.generateSessionId();
         var sessionFilePath = path.join(__dirname, this.path, sessionId);
         this.createStructure();
@@ -50,6 +60,7 @@ var NexusBridge = /** @class */ (function () {
             httpOnly: true,
             path: '/', // The path for which the cookie is valid (root path)
         });
+        this.session.set(key, sessionId);
         return response.setHeader(this.setCookieHeader, cookies);
     };
     NexusBridge.prototype.get = function (key, request) {
