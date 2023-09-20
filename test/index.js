@@ -8,7 +8,7 @@ nexus.init()
 
 app.get("/", (req, res) => {
     nexus.set('cat', 'meow', res)
-
+    console.log(nexus.get('cat', req))
     res.send("meow🐾")
 })
 

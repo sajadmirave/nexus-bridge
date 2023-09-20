@@ -50,7 +50,7 @@ class NexusBridge {
         this.createStructure()
 
         fs.writeFileSync(sessionFilePath, JSON.stringify(value), 'utf-8')
-        
+
         // save session id in cookie
         const cookies = cookie.serialize(key, sessionId, {
             maxAge: 7 * 24 * 60 * 60, // Expires in 7 days
@@ -61,6 +61,10 @@ class NexusBridge {
         return response.setHeader(this.setCookieHeader, cookies)
     }
 
+    public get(key: string, request: http.IncomingMessage) {
+        const cookies = cookie.parse(request.headers.cookie || '');
+        return cookies[key];
+    }
 }
 
 export { NexusBridge }
