@@ -46,6 +46,12 @@ class NexusBridge {
      */
     private session = new Map()
 
+    /**
+     * save flash
+     * @type {Map}
+     */
+    private flashStorage = new Map()
+
     constructor(options: InitOptions = {}) {
         this.createStructure()
 
@@ -136,6 +142,19 @@ class NexusBridge {
 
         const data = fs.readFileSync(path.join(__dirname, this.path, sessionId), 'utf-8')
         return data;
+    }
+
+    // 
+    private createFlash(key: string, value: any) {
+        return this.flashStorage.set(key, value)
+    }
+
+    private getFlash(key: string) {
+        return this.flashStorage.get(key)
+    }
+
+    public flash(key: string, value: any) {
+        key && value ? this.createFlash(key, value) : this.getFlash(key);
     }
 }
 
